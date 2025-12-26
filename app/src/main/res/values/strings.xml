@@ -37,6 +37,9 @@
     <string name="tb_pref_header_general">General settings</string>
     <string name="tb_pref_title_start_menu_layout">Start menu layout</string>
     <string name="tb_pref_title_background_tint">Background tint</string>
+    <string name="tb_pref_title_background_blur">Blur background tint</string>
+    <string name="tb_pref_summary_background_blur">Apply a gaussian blur behind tinted Taskbar surfaces.</string>
+    <string name="tb_pref_summary_background_blur_unsupported">Requires Android 12 or higher.</string>
     <string name="tb_pref_title_scrollbar">Use fast scrollbar on start menu</string>
     <string name="tb_pref_title_start_on_boot">Launch on boot</string>
 

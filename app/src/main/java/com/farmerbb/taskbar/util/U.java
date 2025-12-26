@@ -47,9 +47,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RenderEffect;
 import android.graphics.Rect;
+import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.hardware.display.DisplayManager;
 import android.net.Uri;
 import android.os.Build;
@@ -60,6 +65,7 @@ import android.os.Process;
 import android.os.UserHandle;
 import android.os.UserManager;
 import android.provider.Settings;
+import android.app.WallpaperManager;
 
 import androidx.annotation.DimenRes;
 import androidx.annotation.VisibleForTesting;
@@ -117,6 +123,10 @@ public class U {
     private static final int MAXIMIZED = 0;
     private static final int LEFT = -1;
     private static final int RIGHT = 1;
+    private static final Object backgroundBlurLock = new Object();
+    private static Drawable cachedBlurredBackground;
+    private static int cachedBlurredTint = Integer.MIN_VALUE;
+    private static int cachedWallpaperId = Integer.MIN_VALUE;
 
     public static final int HIDDEN = 0;
     public static final int TOP_APPS = 1;
@@ -906,6 +916,74 @@ public class U {
         }
 
         return pref.getInt(PREF_BACKGROUND_TINT, context.getResources().getInteger(R.integer.tb_translucent_gray));
+    }
+
+    public static boolean isBackgroundBlurEnabled(Context context) {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && getSharedPreferences(context).getBoolean(PREF_BACKGROUND_BLUR, false);
+    }
+
+    public static Drawable getBackgroundTintDrawable(Context context) {
+        int backgroundTint = getBackgroundTint(context);
+
+        if(isBackgroundBlurEnabled(context))
+            return getBlurredBackgroundDrawable(context, backgroundTint);
+        else
+            return new ColorDrawable(backgroundTint);
+    }
+
+    public static void applyBackgroundTint(View view, Context context) {
+        view.setBackground(getBackgroundTintDrawable(context));
+    }
+
+    @TargetApi(Build.VERSION_CODES.S)
+    private static Drawable getBlurredBackgroundDrawable(Context context, int backgroundTint) {
+        int wallpaperId = -1;
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            wallpaperId = WallpaperManager.getInstance(context).getWallpaperId(WallpaperManager.FLAG_SYSTEM);
+        }
+
+        synchronized(backgroundBlurLock) {
+            if(cachedBlurredBackground != null
+                    && cachedBlurredTint == backgroundTint
+                    && cachedWallpaperId == wallpaperId) {
+                Drawable.ConstantState constantState = cachedBlurredBackground.getConstantState();
+                return constantState == null
+                        ? cachedBlurredBackground.mutate()
+                        : constantState.newDrawable().mutate();
+            }
+
+            Drawable wallpaper = WallpaperManager.getInstance(context).getDrawable();
+            if(wallpaper == null) wallpaper = new ColorDrawable(Color.TRANSPARENT);
+
+            DisplayMetrics metrics = context.getResources().getDisplayMetrics();
+            int width = Math.max(metrics.widthPixels, 1);
+            int height = Math.max(metrics.heightPixels, 1);
+
+            Bitmap wallpaperBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(wallpaperBitmap);
+            wallpaper.setBounds(0, 0, width, height);
+            wallpaper.draw(canvas);
+
+            Bitmap blurredBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
+            Canvas blurredCanvas = new Canvas(blurredBitmap);
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setRenderEffect(RenderEffect.createBlurEffect(32f, 32f, Shader.TileMode.CLAMP));
+            blurredCanvas.drawBitmap(wallpaperBitmap, 0, 0, paint);
+
+            Drawable blurredDrawable = new BitmapDrawable(context.getResources(), blurredBitmap);
+            Drawable tintedDrawable = new ColorDrawable(backgroundTint);
+            LayerDrawable layerDrawable = new LayerDrawable(new Drawable[]{blurredDrawable, tintedDrawable});
+
+            cachedBlurredBackground = layerDrawable;
+            cachedBlurredTint = backgroundTint;
+            cachedWallpaperId = wallpaperId;
+
+            Drawable.ConstantState constantState = layerDrawable.getConstantState();
+            return constantState == null
+                    ? layerDrawable.mutate()
+                    : constantState.newDrawable().mutate();
+        }
     }
 
     public static int getAccentColor(Context context) {

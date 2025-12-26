@@ -198,7 +198,6 @@ public class DashboardController extends UIController {
 
         maxSize = columns * rows;
 
-        int backgroundTint = U.getBackgroundTint(context);
         int accentColor = U.getAccentColor(context);
         int accentColorAlt = accentColor;
         accentColorAlt = ColorUtils.setAlphaComponent(accentColorAlt, Color.alpha(accentColorAlt) / 3);
@@ -213,7 +212,7 @@ public class DashboardController extends UIController {
             for(int j = 0; j < rows; j++) {
                 DashboardCell cellLayout = (DashboardCell) View.inflate(context, R.layout.tb_dashboard, null);
                 cellLayout.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, 1));
-                cellLayout.setBackgroundColor(backgroundTint);
+                U.applyBackgroundTint(cellLayout, context);
                 cellLayout.setOnClickListener(cellOcl);
                 cellLayout.setOnHoverListener(cellOhl);
                 cellLayout.setFocusable(false);

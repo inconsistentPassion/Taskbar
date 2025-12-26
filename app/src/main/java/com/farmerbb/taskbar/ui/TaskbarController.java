@@ -266,7 +266,6 @@ public class TaskbarController extends UIController {
         taskbar = layout.findViewById(R.id.taskbar);
         scrollView = layout.findViewById(R.id.taskbar_scrollview);
 
-        int backgroundTint = U.getBackgroundTint(context);
         int accentColor = U.getAccentColor(context);
 
         if(altButtonConfig) {
@@ -333,7 +332,7 @@ public class TaskbarController extends UIController {
             drawSysTray(context, layoutId, layout);
         }
 
-        layout.setBackgroundColor(backgroundTint);
+        U.applyBackgroundTint(layout, context);
         layout.findViewById(R.id.divider).setBackgroundColor(
                 pref.getBoolean(PREF_CENTERED_ICONS, false) ? 0 : accentColor
         );

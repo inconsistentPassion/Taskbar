@@ -22,6 +22,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Build;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import androidx.appcompat.app.ActionBar;
@@ -77,6 +78,15 @@ public class AppearanceFragment extends SettingsFragment {
         bindPreferenceSummaryToValue(findPreference(PREF_SHORTCUT_ICON));
         bindPreferenceSummaryToValue(findPreference(PREF_TRANSPARENT_START_MENU));
         bindPreferenceSummaryToValue(findPreference(PREF_HIDE_ICON_LABELS));
+        Preference backgroundBlurPref = findPreference(PREF_BACKGROUND_BLUR);
+        if(backgroundBlurPref != null) {
+            if(Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                backgroundBlurPref.setEnabled(false);
+                backgroundBlurPref.setSummary(R.string.tb_pref_summary_background_blur_unsupported);
+            } else {
+                bindPreferenceSummaryToValue(backgroundBlurPref);
+            }
+        }
 
         findPreference(PREF_BACKGROUND_TINT_PREF).setSummary("#" + String.format("%08x", U.getBackgroundTint(getActivity())).toUpperCase());
         findPreference(PREF_ACCENT_COLOR_PREF).setSummary("#" + String.format("%08x", U.getAccentColor(getActivity())).toUpperCase());

@@ -33,6 +33,12 @@
         android:key="background_tint_pref"
         android:title="@string/tb_pref_title_background_tint" />
 
+    <CheckBoxPreference
+        android:defaultValue="false"
+        android:key="background_blur"
+        android:summary="@string/tb_pref_summary_background_blur"
+        android:title="@string/tb_pref_title_background_blur" />
+
     <Preference
         android:key="accent_color_pref"
         android:title="@string/tb_pref_title_accent_color" />
