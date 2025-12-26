@@ -224,12 +224,10 @@ public class StartMenuController extends UIController {
         searchView = layout.findViewById(R.id.search);
         searchViewClicked = false;
 
-        int backgroundTint = U.getBackgroundTint(context);
-
         FrameLayout startMenuFrame = layout.findViewById(R.id.start_menu_frame);
         FrameLayout searchViewLayout = layout.findViewById(R.id.search_view_layout);
-        startMenuFrame.setBackgroundColor(backgroundTint);
-        searchViewLayout.setBackgroundColor(backgroundTint);
+        U.applyBackgroundTint(startMenuFrame, context);
+        U.applyBackgroundTint(searchViewLayout, context);
 
         if(shouldShowSearchBox) {
             if(!hasHardwareKeyboard) searchView.setIconifiedByDefault(true);

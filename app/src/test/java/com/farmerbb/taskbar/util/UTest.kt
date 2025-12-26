@@ -12,6 +12,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.os.Build
 import android.provider.Settings
 import android.view.WindowManager
 import android.widget.Toast
@@ -370,6 +371,24 @@ class UTest {
                 context.resources.getInteger(R.integer.tb_translucent_gray).toLong(),
                 U.getBackgroundTint(context).toLong()
         )
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.R])
+    fun testBackgroundBlurDisabledOnUnsupportedApi() {
+        val prefs = U.getSharedPreferences(context)
+        prefs.edit().putBoolean(Constants.PREF_BACKGROUND_BLUR, true).apply()
+        Assert.assertFalse(U.isBackgroundBlurEnabled(context))
+    }
+
+    @Test
+    @Config(sdk = [Build.VERSION_CODES.S])
+    fun testBackgroundBlurEnabledOnSupportedApi() {
+        val prefs = U.getSharedPreferences(context)
+        prefs.edit().putBoolean(Constants.PREF_BACKGROUND_BLUR, true).apply()
+        Assert.assertTrue(U.isBackgroundBlurEnabled(context))
+        prefs.edit().putBoolean(Constants.PREF_BACKGROUND_BLUR, false).apply()
+        Assert.assertFalse(U.isBackgroundBlurEnabled(context))
     }
 
     @Test

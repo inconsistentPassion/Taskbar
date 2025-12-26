@@ -90,6 +90,7 @@ public class Constants {
     public static final String PREF_AUTO_HIDE_NAVBAR = "auto_hide_navbar";
     public static final String PREF_AUTO_HIDE_NAVBAR_CATEGORY = "auto_hide_navbar_category";
     public static final String PREF_AUTO_HIDE_NAVBAR_DESKTOP_MODE = "auto_hide_navbar_desktop_mode";
+    public static final String PREF_BACKGROUND_BLUR = "background_blur";
     public static final String PREF_BACKGROUND_TINT = "background_tint";
     public static final String PREF_BACKGROUND_TINT_PREF = "background_tint_pref";
     public static final String PREF_BACKUP_SETTINGS = "backup_settings";
