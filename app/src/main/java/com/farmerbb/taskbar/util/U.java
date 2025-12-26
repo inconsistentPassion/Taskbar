@@ -127,6 +127,8 @@ public class U {
     private static Drawable cachedBlurredBackground;
     private static int cachedBlurredTint = Integer.MIN_VALUE;
     private static int cachedWallpaperId = Integer.MIN_VALUE;
+    private static final float BACKGROUND_BLUR_RADIUS = 32f;
+    private static final int BACKGROUND_BLUR_DOWNSCALE = 2;
 
     public static final int HIDDEN = 0;
     public static final int TOP_APPS = 1;
@@ -938,9 +940,10 @@ public class U {
 
     @TargetApi(Build.VERSION_CODES.S)
     private static Drawable getBlurredBackgroundDrawable(Context context, int backgroundTint) {
-        int wallpaperId = -1;
+        WallpaperManager wallpaperManager = WallpaperManager.getInstance(context);
+        int wallpaperId = Integer.MIN_VALUE;
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            wallpaperId = WallpaperManager.getInstance(context).getWallpaperId(WallpaperManager.FLAG_SYSTEM);
+            wallpaperId = wallpaperManager.getWallpaperId(WallpaperManager.FLAG_SYSTEM);
         }
 
         synchronized(backgroundBlurLock) {
@@ -953,12 +956,12 @@ public class U {
                         : constantState.newDrawable().mutate();
             }
 
-            Drawable wallpaper = WallpaperManager.getInstance(context).getDrawable();
+            Drawable wallpaper = wallpaperManager.getDrawable();
             if(wallpaper == null) wallpaper = new ColorDrawable(Color.TRANSPARENT);
 
             DisplayMetrics metrics = context.getResources().getDisplayMetrics();
-            int width = Math.max(metrics.widthPixels, 1);
-            int height = Math.max(metrics.heightPixels, 1);
+            int width = Math.max(metrics.widthPixels / BACKGROUND_BLUR_DOWNSCALE, 1);
+            int height = Math.max(metrics.heightPixels / BACKGROUND_BLUR_DOWNSCALE, 1);
 
             Bitmap wallpaperBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(wallpaperBitmap);
@@ -968,8 +971,9 @@ public class U {
             Bitmap blurredBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
             Canvas blurredCanvas = new Canvas(blurredBitmap);
             Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            paint.setRenderEffect(RenderEffect.createBlurEffect(32f, 32f, Shader.TileMode.CLAMP));
+            paint.setRenderEffect(RenderEffect.createBlurEffect(BACKGROUND_BLUR_RADIUS, BACKGROUND_BLUR_RADIUS, Shader.TileMode.CLAMP));
             blurredCanvas.drawBitmap(wallpaperBitmap, 0, 0, paint);
+            wallpaperBitmap.recycle();
 
             Drawable blurredDrawable = new BitmapDrawable(context.getResources(), blurredBitmap);
             Drawable tintedDrawable = new ColorDrawable(backgroundTint);
